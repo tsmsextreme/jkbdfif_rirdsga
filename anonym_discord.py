@@ -3,6 +3,8 @@ import datetime, sqlite3
 import discord, discord.app_commands
 from dotenv import load_dotenv
 import MySQLdb
+from concurrent.futures import ThreadPoolExecutor
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ###
 ###環境変数の取得
@@ -13,6 +15,21 @@ TOKEN = os.getenv("TOKEN")
 SERVERID = int(os.getenv("SERVERID"))
 CHANNELID = int(os.getenv("CHANNELID"))
 
+# pingが来たらサーバーの状態を返すようにする
+port = os.getenv("PORT", 8080)
+address = os.getenv("RENDER_EXTERNAL_URL", "127.0.0.2")
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        message = "Hello, world!"
+        self.wfile.write(bytes(message, "utf8"))
+        print("a")
+        return
+print(port)
+print(address)
+httpd = ThreadingHTTPServer((address, port), MyHandler)
 
 client = discord.Client(intents=discord.Intents.all(),
                         activity=discord.Game("@silent忘れずに‼"))
@@ -209,4 +226,8 @@ async def silent(ctx: discord.Interaction, text :str):
 
 
 
-client.run(TOKEN)
+if __name__ == '__main__':
+    print('開始')
+    with ThreadPoolExecutor() as executor:
+        executor.submit(httpd.serve_forever)
+        executor.submit(client.run, TOKEN)
