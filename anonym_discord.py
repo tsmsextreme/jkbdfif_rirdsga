@@ -16,7 +16,7 @@ SERVERID = int(os.getenv("SERVERID"))
 CHANNELID = int(os.getenv("CHANNELID"))
 
 # pingが来たらサーバーの状態を返すようにする
-port = os.getenv("PORT", 8080)
+port = int(os.getenv("PORT", "8080"))
 address = os.getenv("RENDER_EXTERNAL_URL", "127.0.0.2")
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
