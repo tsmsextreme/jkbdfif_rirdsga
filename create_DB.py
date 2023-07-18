@@ -17,6 +17,13 @@ cur.execute("""
 
 """)
 
+# CREATE TABLE logs(
+#      message_id bigint PRIMARY KEY,
+#       author text,
+#       content text,
+#       time datetime,
+#       moderator text
+#   );
 
 conn.commit()
 conn.close()

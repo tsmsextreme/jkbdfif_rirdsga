@@ -2,6 +2,7 @@
 import datetime, sqlite3
 import discord, discord.app_commands
 from dotenv import load_dotenv
+import MySQLdb
 
 ###
 ###環境変数の取得
@@ -26,16 +27,26 @@ tree = discord.app_commands.CommandTree(client)
 ###ユーザー定義
 ###
 def insert_db(message_id:int, author:str, content:str, created_at:datetime, moderator:str):
-    conn = sqlite3.connect("anonym_discord_log.db")
+    conn = MySQLdb.connect(
+        host= os.getenv("HOST"),
+        user=os.getenv("USERNAME"),
+        passwd= os.getenv("PASSWORD"),
+        db= os.getenv("DATABASE"),
+        autocommit = True,
+        ssl_mode = "VERIFY_IDENTITY",
+        ssl      = {
+            "ca": os.getenv("SSL_CERT")
+        }
+    )
     cur = conn.cursor()
 
     if moderator:
-        sql_query = "UPDATE logs SET moderator = ? WHERE message_id = ?;"
-        cur.execute(sql_query, (moderator, message_id));
+        sql_query = "UPDATE logs SET moderator = %s WHERE message_id = %s;"
+        cur.execute(sql_query, [moderator, message_id]);
     else:
         created_at_JST = (created_at + datetime.timedelta(hours=9)).strftime('%Y/%m/%d %H:%M:%S') #もっと書き方あるはず
-        sql_query = "INSERT INTO logs values(?, ?, ?, ?, NULL)"
-        cur.execute(sql_query, (message_id, str(author), content, created_at_JST))
+        sql_query = "INSERT INTO logs values(%s, %s, %s, %s, NULL)"
+        cur.execute(sql_query, [message_id, str(author), content, created_at_JST])
 
     conn.commit()
     cur.close()
@@ -43,13 +54,23 @@ def insert_db(message_id:int, author:str, content:str, created_at:datetime, mode
 
 
 def extract_db(created_at): #return: レコードのtuple
-    conn = sqlite3.connect("anonym_discord_log.db")
+    conn = MySQLdb.connect(
+        host= os.getenv("HOST"),
+        user=os.getenv("USERNAME"),
+        passwd= os.getenv("PASSWORD"),
+        db= os.getenv("DATABASE"),
+        autocommit = True,
+        ssl_mode = "VERIFY_IDENTITY",
+        ssl      = {
+            "ca": os.getenv("SSL_CERT")
+        }
+    )
     cur = conn.cursor()
 
     created_at_JST = (created_at + datetime.timedelta(hours=9)).strftime('%Y/%m/%d %H:%M:%S')
 
-    sql_query = f"SELECT * FROM logs WHERE time <= '?' ORDER BY time DESC LIMIT 1;"
-    cur.execute(sql_query, (created_at_JST))
+    sql_query = "SELECT * FROM logs WHERE time <= '%s' ORDER BY time DESC LIMIT 1;"
+    cur.execute(sql_query % created_at_JST)
     extract = cur.fetchone()
     cur.close()
     conn.close()
