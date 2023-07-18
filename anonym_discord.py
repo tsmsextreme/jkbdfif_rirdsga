@@ -53,7 +53,8 @@ def insert_db(message_id:int, author:str, content:str, created_at:datetime, mode
         ssl_mode = "VERIFY_IDENTITY",
         ssl      = {
             "ca": os.getenv("SSL_CERT")
-        }
+        },
+        charset="utf8mb4"
     )
     cur = conn.cursor()
 
@@ -80,7 +81,8 @@ def extract_db(created_at): #return: レコードのtuple
         ssl_mode = "VERIFY_IDENTITY",
         ssl      = {
             "ca": os.getenv("SSL_CERT")
-        }
+        },
+        charset="utf8mb4"
     )
     cur = conn.cursor()
 
