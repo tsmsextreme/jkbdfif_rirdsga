@@ -29,7 +29,7 @@ class MyHandler(BaseHTTPRequestHandler):
         return
 print(port)
 print(address)
-httpd = ThreadingHTTPServer((address, port), MyHandler)
+httpd = ThreadingHTTPServer(("", port), MyHandler)
 
 client = discord.Client(intents=discord.Intents.all(),
                         activity=discord.Game("@silent忘れずに‼"))
